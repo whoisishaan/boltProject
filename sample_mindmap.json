@@ -1,0 +1,219 @@
+{
+  "_id": {
+    "$oid": "6859356de690f7c6a28a3899"
+  },
+  "metadata": {
+    "title": "Database Management Systems",
+    "description": "Complete guide to database concepts and management",
+    "version": "1.0.0",
+    "created": "2025-01-27T00:00:00.000Z",
+    "lastModified": "2025-01-27T00:00:00.000Z"
+  },
+  "nodes": [
+    {
+      "id": "relational-db",
+      "title": "Relational Databases",
+      "level": 0,
+      "color": "#DC2626",
+      "children": [
+        {
+          "id": "sql",
+          "title": "SQL",
+          "level": 1,
+          "parent": "relational-db",
+          "color": "#EF4444",
+          "relationshipLabel": "queried with",
+          "children": [
+            {
+              "id": "ddl",
+              "title": "DDL",
+              "level": 2,
+              "parent": "sql",
+              "color": "#F87171",
+              "relationshipLabel": "data definition"
+            },
+            {
+              "id": "dml",
+              "title": "DML",
+              "level": 2,
+              "parent": "sql",
+              "color": "#F87171",
+              "relationshipLabel": "data manipulation"
+            },
+            {
+              "id": "dcl",
+              "title": "DCL",
+              "level": 2,
+              "parent": "sql",
+              "color": "#F87171",
+              "relationshipLabel": "data control"
+            }
+          ]
+        },
+        {
+          "id": "normalization",
+          "title": "Normalization",
+          "level": 1,
+          "parent": "relational-db",
+          "color": "#EF4444",
+          "relationshipLabel": "organized by",
+          "children": [
+            {
+              "id": "1nf",
+              "title": "1NF",
+              "level": 2,
+              "parent": "normalization",
+              "color": "#F87171",
+              "relationshipLabel": "first normal form"
+            },
+            {
+              "id": "2nf",
+              "title": "2NF",
+              "level": 2,
+              "parent": "normalization",
+              "color": "#F87171",
+              "relationshipLabel": "second normal form"
+            },
+            {
+              "id": "3nf",
+              "title": "3NF",
+              "level": 2,
+              "parent": "normalization",
+              "color": "#F87171",
+              "relationshipLabel": "third normal form"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nosql-db",
+      "title": "NoSQL Databases",
+      "level": 0,
+      "color": "#059669",
+      "children": [
+        {
+          "id": "document-db",
+          "title": "Document Stores",
+          "level": 1,
+          "parent": "nosql-db",
+          "color": "#10B981",
+          "relationshipLabel": "type",
+          "children": [
+            {
+              "id": "mongodb",
+              "title": "MongoDB",
+              "level": 2,
+              "parent": "document-db",
+              "color": "#34D399",
+              "relationshipLabel": "example"
+            },
+            {
+              "id": "couchdb",
+              "title": "CouchDB",
+              "level": 2,
+              "parent": "document-db",
+              "color": "#34D399",
+              "relationshipLabel": "example"
+            }
+          ]
+        },
+        {
+          "id": "key-value",
+          "title": "Key-Value Stores",
+          "level": 1,
+          "parent": "nosql-db",
+          "color": "#10B981",
+          "relationshipLabel": "type",
+          "children": [
+            {
+              "id": "redis",
+              "title": "Redis",
+              "level": 2,
+              "parent": "key-value",
+              "color": "#34D399",
+              "relationshipLabel": "example"
+            },
+            {
+              "id": "dynamodb",
+              "title": "DynamoDB",
+              "level": 2,
+              "parent": "key-value",
+              "color": "#34D399",
+              "relationshipLabel": "example"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "transactions",
+      "title": "Transactions & ACID",
+      "level": 0,
+      "color": "#7C3AED",
+      "children": [
+        {
+          "id": "acid-properties",
+          "title": "ACID Properties",
+          "level": 1,
+          "parent": "transactions",
+          "color": "#8B5CF6",
+          "relationshipLabel": "ensures",
+          "children": [
+            {
+              "id": "atomicity",
+              "title": "Atomicity",
+              "level": 2,
+              "parent": "acid-properties",
+              "color": "#A78BFA",
+              "relationshipLabel": "all or nothing"
+            },
+            {
+              "id": "consistency",
+              "title": "Consistency",
+              "level": 2,
+              "parent": "acid-properties",
+              "color": "#A78BFA",
+              "relationshipLabel": "valid state"
+            }
+          ]
+        },
+        {
+          "id": "concurrency",
+          "title": "Concurrency Control",
+          "level": 1,
+          "parent": "transactions",
+          "color": "#8B5CF6",
+          "relationshipLabel": "manages",
+          "children": [
+            {
+              "id": "locking",
+              "title": "Locking",
+              "level": 2,
+              "parent": "concurrency",
+              "color": "#A78BFA",
+              "relationshipLabel": "mechanism"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "topLevelConnections": [
+    {
+      "from": "relational-db",
+      "to": "nosql-db",
+      "label": "alternative to"
+    },
+    {
+      "from": "relational-db",
+      "to": "transactions",
+      "label": "supports"
+    },
+    {
+      "from": "nosql-db",
+      "to": "transactions",
+      "label": "may support"
+    }
+  ]
+}
