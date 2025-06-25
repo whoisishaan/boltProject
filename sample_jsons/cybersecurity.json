@@ -1,0 +1,294 @@
+{
+  "metadata": {
+    "title": "Cybersecurity Framework",
+    "description": "Comprehensive cybersecurity concepts and practices",
+    "version": "1.0.0",
+    "created": "2025-01-27T00:00:00.000Z",
+    "lastModified": "2025-01-27T00:00:00.000Z"
+  },
+  "nodes": [
+    {
+      "id": "network-security",
+      "title": "Network Security",
+      "level": 0,
+      "position": { "x": -400, "y": 0 },
+      "color": "#DC2626",
+      "children": [
+        {
+          "id": "firewalls",
+          "title": "Firewalls",
+          "level": 1,
+          "position": { "x": -650, "y": -200 },
+          "parent": "network-security",
+          "color": "#EF4444",
+          "relationshipLabel": "protected by",
+          "children": [
+            {
+              "id": "packet-filtering",
+              "title": "Packet Filtering",
+              "level": 2,
+              "position": { "x": -800, "y": -350 },
+              "parent": "firewalls",
+              "color": "#F87171",
+              "relationshipLabel": "method"
+            },
+            {
+              "id": "stateful-inspection",
+              "title": "Stateful Inspection",
+              "level": 2,
+              "position": { "x": -650, "y": -380 },
+              "parent": "firewalls",
+              "color": "#F87171",
+              "relationshipLabel": "method"
+            },
+            {
+              "id": "application-layer",
+              "title": "Application Layer",
+              "level": 2,
+              "position": { "x": -500, "y": -350 },
+              "parent": "firewalls",
+              "color": "#F87171",
+              "relationshipLabel": "method"
+            }
+          ]
+        },
+        {
+          "id": "intrusion-detection",
+          "title": "Intrusion Detection",
+          "level": 1,
+          "position": { "x": -550, "y": 200 },
+          "parent": "network-security",
+          "color": "#EF4444",
+          "relationshipLabel": "monitored by",
+          "children": [
+            {
+              "id": "signature-based",
+              "title": "Signature-based",
+              "level": 2,
+              "position": { "x": -700, "y": 350 },
+              "parent": "intrusion-detection",
+              "color": "#F87171",
+              "relationshipLabel": "detection type"
+            },
+            {
+              "id": "anomaly-based",
+              "title": "Anomaly-based",
+              "level": 2,
+              "position": { "x": -550, "y": 380 },
+              "parent": "intrusion-detection",
+              "color": "#F87171",
+              "relationshipLabel": "detection type"
+            },
+            {
+              "id": "hybrid",
+              "title": "Hybrid",
+              "level": 2,
+              "position": { "x": -400, "y": 350 },
+              "parent": "intrusion-detection",
+              "color": "#F87171",
+              "relationshipLabel": "detection type"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "application-security",
+      "title": "Application Security",
+      "level": 0,
+      "position": { "x": 400, "y": 0 },
+      "color": "#059669",
+      "children": [
+        {
+          "id": "secure-coding",
+          "title": "Secure Coding",
+          "level": 1,
+          "position": { "x": 200, "y": -200 },
+          "parent": "application-security",
+          "color": "#10B981",
+          "relationshipLabel": "implemented via",
+          "children": [
+            {
+              "id": "input-validation",
+              "title": "Input Validation",
+              "level": 2,
+              "position": { "x": 50, "y": -350 },
+              "parent": "secure-coding",
+              "color": "#34D399",
+              "relationshipLabel": "practice"
+            },
+            {
+              "id": "output-encoding",
+              "title": "Output Encoding",
+              "level": 2,
+              "position": { "x": 200, "y": -380 },
+              "parent": "secure-coding",
+              "color": "#34D399",
+              "relationshipLabel": "practice"
+            },
+            {
+              "id": "error-handling",
+              "title": "Error Handling",
+              "level": 2,
+              "position": { "x": 350, "y": -350 },
+              "parent": "secure-coding",
+              "color": "#34D399",
+              "relationshipLabel": "practice"
+            }
+          ]
+        },
+        {
+          "id": "vulnerability-testing",
+          "title": "Vulnerability Testing",
+          "level": 1,
+          "position": { "x": 600, "y": -200 },
+          "parent": "application-security",
+          "color": "#10B981",
+          "relationshipLabel": "tested via",
+          "children": [
+            {
+              "id": "sast",
+              "title": "SAST",
+              "level": 2,
+              "position": { "x": 550, "y": -350 },
+              "parent": "vulnerability-testing",
+              "color": "#34D399",
+              "relationshipLabel": "static analysis"
+            },
+            {
+              "id": "dast",
+              "title": "DAST",
+              "level": 2,
+              "position": { "x": 700, "y": -380 },
+              "parent": "vulnerability-testing",
+              "color": "#34D399",
+              "relationshipLabel": "dynamic analysis"
+            }
+          ]
+        },
+        {
+          "id": "threat-modeling",
+          "title": "Threat Modeling",
+          "level": 1,
+          "position": { "x": 550, "y": 200 },
+          "parent": "application-security",
+          "color": "#10B981",
+          "relationshipLabel": "analyzed via",
+          "children": [
+            {
+              "id": "stride",
+              "title": "STRIDE",
+              "level": 2,
+              "position": { "x": 400, "y": 350 },
+              "parent": "threat-modeling",
+              "color": "#34D399",
+              "relationshipLabel": "methodology"
+            },
+            {
+              "id": "attack-trees",
+              "title": "Attack Trees",
+              "level": 2,
+              "position": { "x": 700, "y": 380 },
+              "parent": "threat-modeling",
+              "color": "#34D399",
+              "relationshipLabel": "visualization"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "identity-access",
+      "title": "Identity & Access Management",
+      "level": 0,
+      "position": { "x": 0, "y": 450 },
+      "color": "#7C3AED",
+      "children": [
+        {
+          "id": "authentication",
+          "title": "Authentication",
+          "level": 1,
+          "position": { "x": -200, "y": 650 },
+          "parent": "identity-access",
+          "color": "#8B5CF6",
+          "relationshipLabel": "verifies via",
+          "children": [
+            {
+              "id": "mfa",
+              "title": "Multi-Factor Auth",
+              "level": 2,
+              "position": { "x": -400, "y": 800 },
+              "parent": "authentication",
+              "color": "#A78BFA",
+              "relationshipLabel": "enhanced by"
+            },
+            {
+              "id": "sso",
+              "title": "Single Sign-On",
+              "level": 2,
+              "position": { "x": -200, "y": 830 },
+              "parent": "authentication",
+              "color": "#A78BFA",
+              "relationshipLabel": "simplified by"
+            },
+            {
+              "id": "biometric",
+              "title": "Biometric",
+              "level": 2,
+              "position": { "x": 0, "y": 800 },
+              "parent": "authentication",
+              "color": "#A78BFA",
+              "relationshipLabel": "secured by"
+            }
+          ]
+        },
+        {
+          "id": "authorization",
+          "title": "Authorization",
+          "level": 1,
+          "position": { "x": 200, "y": 650 },
+          "parent": "identity-access",
+          "color": "#8B5CF6",
+          "relationshipLabel": "controls via",
+          "children": [
+            {
+              "id": "rbac",
+              "title": "RBAC",
+              "level": 2,
+              "position": { "x": 400, "y": 800 },
+              "parent": "authorization",
+              "color": "#A78BFA",
+              "relationshipLabel": "role-based"
+            },
+            {
+              "id": "abac",
+              "title": "ABAC",
+              "level": 2,
+              "position": { "x": 200, "y": 830 },
+              "parent": "authorization",
+              "color": "#A78BFA",
+              "relationshipLabel": "attribute-based"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "topLevelConnections": [
+    {
+      "from": "network-security",
+      "to": "application-security",
+      "label": "protects"
+    },
+    {
+      "from": "application-security",
+      "to": "identity-access",
+      "label": "requires"
+    },
+    {
+      "from": "identity-access",
+      "to": "network-security",
+      "label": "secures"
+    }
+  ]
+}

@@ -37,57 +37,39 @@ const Connection: React.FC<ConnectionProps> = ({ from, to, label }) => {
   const x2 = to.position.x - unitX * toRadius;
   const y2 = to.position.y - unitY * toRadius;
   
-  // Calculate control points for smooth curves
-  const midX = (x1 + x2) / 2;
-  const midY = (y1 + y2) / 2;
-  const adjustedDistance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
-  const curvature = Math.min(adjustedDistance * 0.25, 80);
-  
-  const controlX1 = midX + (y2 - y1) * curvature / adjustedDistance;
-  const controlY1 = midY - (x2 - x1) * curvature / adjustedDistance;
-  
-  const pathData = `M ${x1} ${y1} Q ${controlX1} ${controlY1} ${x2} ${y2}`;
-  
-  // Calculate label position - offset perpendicular to the line to avoid overlap
-  const labelX = (x1 + controlX1 + x2) / 3;
-  const labelY = (y1 + controlY1 + y2) / 3;
-  
-  // Calculate perpendicular offset to position text above/beside the line
-  const perpX = -(y2 - y1) / adjustedDistance;
-  const perpY = (x2 - x1) / adjustedDistance;
-  const offsetDistance = 18; // Increased distance from the line
-  
-  const finalLabelX = labelX + perpX * offsetDistance;
-  const finalLabelY = labelY + perpY * offsetDistance;
-  
-  // Calculate angle for label rotation
-  const angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
-  const normalizedAngle = angle > 90 || angle < -90 ? angle + 180 : angle;
-  
   // Theme-aware colors
   const shadowColor = isDark ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.1)';
   const lineColor = isDark ? '#64748B' : '#94A3B8';
   const hoverColor = isDark ? '#475569' : '#64748B';
   const textColor = isDark ? '#94A3B8' : '#64748B';
   
+  // Calculate midpoint for label
+  const midX = (x1 + x2) / 2;
+  const midY = (y1 + y2) / 2;
+  
   return (
     <g className="connection">
       {/* Connection shadow */}
-      <path
-        d={pathData}
+      <line
+        x1={x1 + 2}
+        y1={y1 + 2}
+        x2={x2 + 2}
+        y2={y2 + 2}
         stroke={shadowColor}
         strokeWidth="4"
-        fill="none"
-        transform="translate(2, 2)"
+        strokeLinecap="round"
       />
       
       {/* Main connection */}
-      <path
-        d={pathData}
+      <line
+        x1={x1}
+        y1={y1}
+        x2={x2}
+        y2={y2}
         stroke={lineColor}
         strokeWidth="2"
-        fill="none"
-        className="transition-all duration-300 hover:stroke-3"
+        strokeLinecap="round"
+        className="transition-colors duration-300"
         style={{
           '--hover-color': hoverColor
         } as React.CSSProperties}
@@ -100,18 +82,16 @@ const Connection: React.FC<ConnectionProps> = ({ from, to, label }) => {
         markerEnd="url(#arrowhead)"
       />
       
-      {/* Connection label - Positioned offset from the line to prevent overlap */}
+      {/* Connection label */}
       {label && (
         <text
-          x={finalLabelX}
-          y={finalLabelY}
+          x={midX}
+          y={midY - 8} // Position slightly above the line
           textAnchor="middle"
-          dy="0.35em"
           fill={textColor}
           fontSize="10px"
           fontWeight="500"
           className="pointer-events-none select-none drop-shadow-sm"
-          transform={`rotate(${normalizedAngle} ${finalLabelX} ${finalLabelY})`}
         >
           {label}
         </text>

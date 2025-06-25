@@ -1,0 +1,294 @@
+{
+  "metadata": {
+    "title": "Software Architecture Patterns",
+    "description": "Modern software architecture patterns and principles",
+    "version": "1.0.0",
+    "created": "2025-01-27T00:00:00.000Z",
+    "lastModified": "2025-01-27T00:00:00.000Z"
+  },
+  "nodes": [
+    {
+      "id": "monolithic",
+      "title": "Monolithic Architecture",
+      "level": 0,
+      "position": { "x": -400, "y": 0 },
+      "color": "#DC2626",
+      "children": [
+        {
+          "id": "layered",
+          "title": "Layered Architecture",
+          "level": 1,
+          "position": { "x": -650, "y": -200 },
+          "parent": "monolithic",
+          "color": "#EF4444",
+          "relationshipLabel": "organized as",
+          "children": [
+            {
+              "id": "presentation",
+              "title": "Presentation Layer",
+              "level": 2,
+              "position": { "x": -800, "y": -350 },
+              "parent": "layered",
+              "color": "#F87171",
+              "relationshipLabel": "top layer"
+            },
+            {
+              "id": "business",
+              "title": "Business Layer",
+              "level": 2,
+              "position": { "x": -650, "y": -380 },
+              "parent": "layered",
+              "color": "#F87171",
+              "relationshipLabel": "logic layer"
+            },
+            {
+              "id": "data-access",
+              "title": "Data Access Layer",
+              "level": 2,
+              "position": { "x": -500, "y": -350 },
+              "parent": "layered",
+              "color": "#F87171",
+              "relationshipLabel": "bottom layer"
+            }
+          ]
+        },
+        {
+          "id": "mvc",
+          "title": "MVC Pattern",
+          "level": 1,
+          "position": { "x": -550, "y": 200 },
+          "parent": "monolithic",
+          "color": "#EF4444",
+          "relationshipLabel": "follows",
+          "children": [
+            {
+              "id": "model",
+              "title": "Model",
+              "level": 2,
+              "position": { "x": -700, "y": 350 },
+              "parent": "mvc",
+              "color": "#F87171",
+              "relationshipLabel": "data"
+            },
+            {
+              "id": "view",
+              "title": "View",
+              "level": 2,
+              "position": { "x": -550, "y": 380 },
+              "parent": "mvc",
+              "color": "#F87171",
+              "relationshipLabel": "presentation"
+            },
+            {
+              "id": "controller",
+              "title": "Controller",
+              "level": 2,
+              "position": { "x": -400, "y": 350 },
+              "parent": "mvc",
+              "color": "#F87171",
+              "relationshipLabel": "logic"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "microservices",
+      "title": "Microservices Architecture",
+      "level": 0,
+      "position": { "x": 400, "y": 0 },
+      "color": "#059669",
+      "children": [
+        {
+          "id": "service-mesh",
+          "title": "Service Mesh",
+          "level": 1,
+          "position": { "x": 200, "y": -200 },
+          "parent": "microservices",
+          "color": "#10B981",
+          "relationshipLabel": "managed by",
+          "children": [
+            {
+              "id": "istio",
+              "title": "Istio",
+              "level": 2,
+              "position": { "x": 50, "y": -350 },
+              "parent": "service-mesh",
+              "color": "#34D399",
+              "relationshipLabel": "implementation"
+            },
+            {
+              "id": "linkerd",
+              "title": "Linkerd",
+              "level": 2,
+              "position": { "x": 200, "y": -380 },
+              "parent": "service-mesh",
+              "color": "#34D399",
+              "relationshipLabel": "implementation"
+            },
+            {
+              "id": "consul",
+              "title": "Consul Connect",
+              "level": 2,
+              "position": { "x": 350, "y": -350 },
+              "parent": "service-mesh",
+              "color": "#34D399",
+              "relationshipLabel": "implementation"
+            }
+          ]
+        },
+        {
+          "id": "api-gateway",
+          "title": "API Gateway",
+          "level": 1,
+          "position": { "x": 600, "y": -200 },
+          "parent": "microservices",
+          "color": "#10B981",
+          "relationshipLabel": "accessed via",
+          "children": [
+            {
+              "id": "kong",
+              "title": "Kong",
+              "level": 2,
+              "position": { "x": 550, "y": -350 },
+              "parent": "api-gateway",
+              "color": "#34D399",
+              "relationshipLabel": "solution"
+            },
+            {
+              "id": "nginx",
+              "title": "NGINX",
+              "level": 2,
+              "position": { "x": 700, "y": -380 },
+              "parent": "api-gateway",
+              "color": "#34D399",
+              "relationshipLabel": "solution"
+            }
+          ]
+        },
+        {
+          "id": "service-discovery",
+          "title": "Service Discovery",
+          "level": 1,
+          "position": { "x": 550, "y": 200 },
+          "parent": "microservices",
+          "color": "#10B981",
+          "relationshipLabel": "discovers via",
+          "children": [
+            {
+              "id": "eureka",
+              "title": "Eureka",
+              "level": 2,
+              "position": { "x": 400, "y": 350 },
+              "parent": "service-discovery",
+              "color": "#34D399",
+              "relationshipLabel": "netflix"
+            },
+            {
+              "id": "consul-discovery",
+              "title": "Consul",
+              "level": 2,
+              "position": { "x": 700, "y": 380 },
+              "parent": "service-discovery",
+              "color": "#34D399",
+              "relationshipLabel": "hashicorp"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "event-driven",
+      "title": "Event-Driven Architecture",
+      "level": 0,
+      "position": { "x": 0, "y": 450 },
+      "color": "#7C3AED",
+      "children": [
+        {
+          "id": "message-brokers",
+          "title": "Message Brokers",
+          "level": 1,
+          "position": { "x": -200, "y": 650 },
+          "parent": "event-driven",
+          "color": "#8B5CF6",
+          "relationshipLabel": "uses",
+          "children": [
+            {
+              "id": "kafka",
+              "title": "Apache Kafka",
+              "level": 2,
+              "position": { "x": -400, "y": 800 },
+              "parent": "message-brokers",
+              "color": "#A78BFA",
+              "relationshipLabel": "streaming"
+            },
+            {
+              "id": "rabbitmq",
+              "title": "RabbitMQ",
+              "level": 2,
+              "position": { "x": -200, "y": 830 },
+              "parent": "message-brokers",
+              "color": "#A78BFA",
+              "relationshipLabel": "messaging"
+            },
+            {
+              "id": "redis-pub-sub",
+              "title": "Redis Pub/Sub",
+              "level": 2,
+              "position": { "x": 0, "y": 800 },
+              "parent": "message-brokers",
+              "color": "#A78BFA",
+              "relationshipLabel": "lightweight"
+            }
+          ]
+        },
+        {
+          "id": "event-sourcing",
+          "title": "Event Sourcing",
+          "level": 1,
+          "position": { "x": 200, "y": 650 },
+          "parent": "event-driven",
+          "color": "#8B5CF6",
+          "relationshipLabel": "implements",
+          "children": [
+            {
+              "id": "event-store",
+              "title": "Event Store",
+              "level": 2,
+              "position": { "x": 400, "y": 800 },
+              "parent": "event-sourcing",
+              "color": "#A78BFA",
+              "relationshipLabel": "persists in"
+            },
+            {
+              "id": "cqrs",
+              "title": "CQRS",
+              "level": 2,
+              "position": { "x": 200, "y": 830 },
+              "parent": "event-sourcing",
+              "color": "#A78BFA",
+              "relationshipLabel": "combined with"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "topLevelConnections": [
+    {
+      "from": "monolithic",
+      "to": "microservices",
+      "label": "evolves to"
+    },
+    {
+      "from": "microservices",
+      "to": "event-driven",
+      "label": "communicates via"
+    },
+    {
+      "from": "event-driven",
+      "to": "monolithic",
+      "label": "can enhance"
+    }
+  ]
+}

@@ -1,0 +1,285 @@
+{
+  "metadata": {
+    "title": "Web Development Stack",
+    "description": "Modern web development technologies and concepts",
+    "version": "1.0.0",
+    "created": "2025-01-27T00:00:00.000Z",
+    "lastModified": "2025-01-27T00:00:00.000Z"
+  },
+  "nodes": [
+    {
+      "id": "frontend",
+      "title": "Frontend",
+      "level": 0,
+      "position": { "x": -400, "y": 0 },
+      "color": "#2563EB",
+      "children": [
+        {
+          "id": "frameworks",
+          "title": "Frameworks",
+          "level": 1,
+          "position": { "x": -650, "y": -200 },
+          "parent": "frontend",
+          "color": "#3B82F6",
+          "relationshipLabel": "built with",
+          "children": [
+            {
+              "id": "react",
+              "title": "React",
+              "level": 2,
+              "position": { "x": -800, "y": -350 },
+              "parent": "frameworks",
+              "color": "#60A5FA",
+              "relationshipLabel": "library"
+            },
+            {
+              "id": "vue",
+              "title": "Vue.js",
+              "level": 2,
+              "position": { "x": -650, "y": -380 },
+              "parent": "frameworks",
+              "color": "#60A5FA",
+              "relationshipLabel": "framework"
+            },
+            {
+              "id": "angular",
+              "title": "Angular",
+              "level": 2,
+              "position": { "x": -500, "y": -350 },
+              "parent": "frameworks",
+              "color": "#60A5FA",
+              "relationshipLabel": "framework"
+            }
+          ]
+        },
+        {
+          "id": "styling",
+          "title": "Styling",
+          "level": 1,
+          "position": { "x": -550, "y": 200 },
+          "parent": "frontend",
+          "color": "#3B82F6",
+          "relationshipLabel": "styled with",
+          "children": [
+            {
+              "id": "css",
+              "title": "CSS",
+              "level": 2,
+              "position": { "x": -700, "y": 350 },
+              "parent": "styling",
+              "color": "#60A5FA",
+              "relationshipLabel": "base"
+            },
+            {
+              "id": "tailwind",
+              "title": "Tailwind",
+              "level": 2,
+              "position": { "x": -550, "y": 380 },
+              "parent": "styling",
+              "color": "#60A5FA",
+              "relationshipLabel": "utility-first"
+            },
+            {
+              "id": "sass",
+              "title": "Sass",
+              "level": 2,
+              "position": { "x": -400, "y": 350 },
+              "parent": "styling",
+              "color": "#60A5FA",
+              "relationshipLabel": "preprocessor"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "backend",
+      "title": "Backend",
+      "level": 0,
+      "position": { "x": 400, "y": 0 },
+      "color": "#059669",
+      "children": [
+        {
+          "id": "runtime",
+          "title": "Runtime",
+          "level": 1,
+          "position": { "x": 200, "y": -200 },
+          "parent": "backend",
+          "color": "#10B981",
+          "relationshipLabel": "runs on",
+          "children": [
+            {
+              "id": "nodejs",
+              "title": "Node.js",
+              "level": 2,
+              "position": { "x": 50, "y": -350 },
+              "parent": "runtime",
+              "color": "#34D399",
+              "relationshipLabel": "javascript"
+            },
+            {
+              "id": "python",
+              "title": "Python",
+              "level": 2,
+              "position": { "x": 200, "y": -380 },
+              "parent": "runtime",
+              "color": "#34D399",
+              "relationshipLabel": "interpreted"
+            }
+          ]
+        },
+        {
+          "id": "apis",
+          "title": "APIs",
+          "level": 1,
+          "position": { "x": 600, "y": -200 },
+          "parent": "backend",
+          "color": "#10B981",
+          "relationshipLabel": "exposes",
+          "children": [
+            {
+              "id": "rest",
+              "title": "REST",
+              "level": 2,
+              "position": { "x": 550, "y": -350 },
+              "parent": "apis",
+              "color": "#34D399",
+              "relationshipLabel": "architectural style"
+            },
+            {
+              "id": "graphql",
+              "title": "GraphQL",
+              "level": 2,
+              "position": { "x": 700, "y": -380 },
+              "parent": "apis",
+              "color": "#34D399",
+              "relationshipLabel": "query language"
+            }
+          ]
+        },
+        {
+          "id": "databases",
+          "title": "Databases",
+          "level": 1,
+          "position": { "x": 550, "y": 200 },
+          "parent": "backend",
+          "color": "#10B981",
+          "relationshipLabel": "stores in",
+          "children": [
+            {
+              "id": "postgresql",
+              "title": "PostgreSQL",
+              "level": 2,
+              "position": { "x": 400, "y": 350 },
+              "parent": "databases",
+              "color": "#34D399",
+              "relationshipLabel": "relational"
+            },
+            {
+              "id": "mongodb",
+              "title": "MongoDB",
+              "level": 2,
+              "position": { "x": 700, "y": 380 },
+              "parent": "databases",
+              "color": "#34D399",
+              "relationshipLabel": "document"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deployment",
+      "title": "Deployment",
+      "level": 0,
+      "position": { "x": 0, "y": 450 },
+      "color": "#7C3AED",
+      "children": [
+        {
+          "id": "hosting",
+          "title": "Hosting",
+          "level": 1,
+          "position": { "x": -200, "y": 650 },
+          "parent": "deployment",
+          "color": "#8B5CF6",
+          "relationshipLabel": "hosted on",
+          "children": [
+            {
+              "id": "vercel",
+              "title": "Vercel",
+              "level": 2,
+              "position": { "x": -400, "y": 800 },
+              "parent": "hosting",
+              "color": "#A78BFA",
+              "relationshipLabel": "platform"
+            },
+            {
+              "id": "netlify",
+              "title": "Netlify",
+              "level": 2,
+              "position": { "x": -200, "y": 830 },
+              "parent": "hosting",
+              "color": "#A78BFA",
+              "relationshipLabel": "platform"
+            },
+            {
+              "id": "aws",
+              "title": "AWS",
+              "level": 2,
+              "position": { "x": 0, "y": 800 },
+              "parent": "hosting",
+              "color": "#A78BFA",
+              "relationshipLabel": "cloud provider"
+            }
+          ]
+        },
+        {
+          "id": "containers",
+          "title": "Containers",
+          "level": 1,
+          "position": { "x": 200, "y": 650 },
+          "parent": "deployment",
+          "color": "#8B5CF6",
+          "relationshipLabel": "packaged in",
+          "children": [
+            {
+              "id": "docker",
+              "title": "Docker",
+              "level": 2,
+              "position": { "x": 400, "y": 800 },
+              "parent": "containers",
+              "color": "#A78BFA",
+              "relationshipLabel": "containerization"
+            },
+            {
+              "id": "kubernetes",
+              "title": "Kubernetes",
+              "level": 2,
+              "position": { "x": 200, "y": 830 },
+              "parent": "containers",
+              "color": "#A78BFA",
+              "relationshipLabel": "orchestration"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "topLevelConnections": [
+    {
+      "from": "frontend",
+      "to": "backend",
+      "label": "communicates with"
+    },
+    {
+      "from": "frontend",
+      "to": "deployment",
+      "label": "deployed via"
+    },
+    {
+      "from": "backend",
+      "to": "deployment",
+      "label": "deployed via"
+    }
+  ]
+}

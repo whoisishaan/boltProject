@@ -1,0 +1,294 @@
+{
+  "metadata": {
+    "title": "Machine Learning Pipeline",
+    "description": "End-to-end machine learning workflow and concepts",
+    "version": "1.0.0",
+    "created": "2025-01-27T00:00:00.000Z",
+    "lastModified": "2025-01-27T00:00:00.000Z"
+  },
+  "nodes": [
+    {
+      "id": "data-prep",
+      "title": "Data Preparation",
+      "level": 0,
+      "position": { "x": -400, "y": 0 },
+      "color": "#DC2626",
+      "children": [
+        {
+          "id": "collection",
+          "title": "Data Collection",
+          "level": 1,
+          "position": { "x": -650, "y": -200 },
+          "parent": "data-prep",
+          "color": "#EF4444",
+          "relationshipLabel": "starts with",
+          "children": [
+            {
+              "id": "apis",
+              "title": "APIs",
+              "level": 2,
+              "position": { "x": -800, "y": -350 },
+              "parent": "collection",
+              "color": "#F87171",
+              "relationshipLabel": "source"
+            },
+            {
+              "id": "scraping",
+              "title": "Web Scraping",
+              "level": 2,
+              "position": { "x": -650, "y": -380 },
+              "parent": "collection",
+              "color": "#F87171",
+              "relationshipLabel": "method"
+            },
+            {
+              "id": "databases",
+              "title": "Databases",
+              "level": 2,
+              "position": { "x": -500, "y": -350 },
+              "parent": "collection",
+              "color": "#F87171",
+              "relationshipLabel": "storage"
+            }
+          ]
+        },
+        {
+          "id": "cleaning",
+          "title": "Data Cleaning",
+          "level": 1,
+          "position": { "x": -550, "y": 200 },
+          "parent": "data-prep",
+          "color": "#EF4444",
+          "relationshipLabel": "requires",
+          "children": [
+            {
+              "id": "missing-data",
+              "title": "Missing Data",
+              "level": 2,
+              "position": { "x": -700, "y": 350 },
+              "parent": "cleaning",
+              "color": "#F87171",
+              "relationshipLabel": "handles"
+            },
+            {
+              "id": "outliers",
+              "title": "Outliers",
+              "level": 2,
+              "position": { "x": -550, "y": 380 },
+              "parent": "cleaning",
+              "color": "#F87171",
+              "relationshipLabel": "removes"
+            },
+            {
+              "id": "normalization",
+              "title": "Normalization",
+              "level": 2,
+              "position": { "x": -400, "y": 350 },
+              "parent": "cleaning",
+              "color": "#F87171",
+              "relationshipLabel": "applies"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "modeling",
+      "title": "Model Training",
+      "level": 0,
+      "position": { "x": 400, "y": 0 },
+      "color": "#059669",
+      "children": [
+        {
+          "id": "algorithms",
+          "title": "Algorithms",
+          "level": 1,
+          "position": { "x": 200, "y": -200 },
+          "parent": "modeling",
+          "color": "#10B981",
+          "relationshipLabel": "uses",
+          "children": [
+            {
+              "id": "supervised",
+              "title": "Supervised",
+              "level": 2,
+              "position": { "x": 50, "y": -350 },
+              "parent": "algorithms",
+              "color": "#34D399",
+              "relationshipLabel": "type"
+            },
+            {
+              "id": "unsupervised",
+              "title": "Unsupervised",
+              "level": 2,
+              "position": { "x": 200, "y": -380 },
+              "parent": "algorithms",
+              "color": "#34D399",
+              "relationshipLabel": "type"
+            },
+            {
+              "id": "reinforcement",
+              "title": "Reinforcement",
+              "level": 2,
+              "position": { "x": 350, "y": -350 },
+              "parent": "algorithms",
+              "color": "#34D399",
+              "relationshipLabel": "type"
+            }
+          ]
+        },
+        {
+          "id": "validation",
+          "title": "Validation",
+          "level": 1,
+          "position": { "x": 600, "y": -200 },
+          "parent": "modeling",
+          "color": "#10B981",
+          "relationshipLabel": "validated by",
+          "children": [
+            {
+              "id": "cross-validation",
+              "title": "Cross Validation",
+              "level": 2,
+              "position": { "x": 550, "y": -350 },
+              "parent": "validation",
+              "color": "#34D399",
+              "relationshipLabel": "technique"
+            },
+            {
+              "id": "metrics",
+              "title": "Metrics",
+              "level": 2,
+              "position": { "x": 700, "y": -380 },
+              "parent": "validation",
+              "color": "#34D399",
+              "relationshipLabel": "measured by"
+            }
+          ]
+        },
+        {
+          "id": "optimization",
+          "title": "Optimization",
+          "level": 1,
+          "position": { "x": 550, "y": 200 },
+          "parent": "modeling",
+          "color": "#10B981",
+          "relationshipLabel": "improved via",
+          "children": [
+            {
+              "id": "hyperparameters",
+              "title": "Hyperparameters",
+              "level": 2,
+              "position": { "x": 400, "y": 350 },
+              "parent": "optimization",
+              "color": "#34D399",
+              "relationshipLabel": "tuning"
+            },
+            {
+              "id": "feature-selection",
+              "title": "Feature Selection",
+              "level": 2,
+              "position": { "x": 700, "y": 380 },
+              "parent": "optimization",
+              "color": "#34D399",
+              "relationshipLabel": "engineering"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "deployment",
+      "title": "Model Deployment",
+      "level": 0,
+      "position": { "x": 0, "y": 450 },
+      "color": "#7C3AED",
+      "children": [
+        {
+          "id": "serving",
+          "title": "Model Serving",
+          "level": 1,
+          "position": { "x": -200, "y": 650 },
+          "parent": "deployment",
+          "color": "#8B5CF6",
+          "relationshipLabel": "served via",
+          "children": [
+            {
+              "id": "api-endpoints",
+              "title": "API Endpoints",
+              "level": 2,
+              "position": { "x": -400, "y": 800 },
+              "parent": "serving",
+              "color": "#A78BFA",
+              "relationshipLabel": "exposed as"
+            },
+            {
+              "id": "batch-processing",
+              "title": "Batch Processing",
+              "level": 2,
+              "position": { "x": -200, "y": 830 },
+              "parent": "serving",
+              "color": "#A78BFA",
+              "relationshipLabel": "processes via"
+            },
+            {
+              "id": "real-time",
+              "title": "Real-time",
+              "level": 2,
+              "position": { "x": 0, "y": 800 },
+              "parent": "serving",
+              "color": "#A78BFA",
+              "relationshipLabel": "streams via"
+            }
+          ]
+        },
+        {
+          "id": "monitoring",
+          "title": "Monitoring",
+          "level": 1,
+          "position": { "x": 200, "y": 650 },
+          "parent": "deployment",
+          "color": "#8B5CF6",
+          "relationshipLabel": "monitored for",
+          "children": [
+            {
+              "id": "performance",
+              "title": "Performance",
+              "level": 2,
+              "position": { "x": 400, "y": 800 },
+              "parent": "monitoring",
+              "color": "#A78BFA",
+              "relationshipLabel": "tracks"
+            },
+            {
+              "id": "drift",
+              "title": "Data Drift",
+              "level": 2,
+              "position": { "x": 200, "y": 830 },
+              "parent": "monitoring",
+              "color": "#A78BFA",
+              "relationshipLabel": "detects"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "topLevelConnections": [
+    {
+      "from": "data-prep",
+      "to": "modeling",
+      "label": "feeds into"
+    },
+    {
+      "from": "modeling",
+      "to": "deployment",
+      "label": "results in"
+    },
+    {
+      "from": "deployment",
+      "to": "data-prep",
+      "label": "feedback to"
+    }
+  ]
+}
