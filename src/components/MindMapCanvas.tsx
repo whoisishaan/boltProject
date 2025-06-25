@@ -28,7 +28,7 @@ const MindMapCanvas: React.FC<MindMapCanvasProps> = ({
   const [viewport, setViewport] = useState<ViewportState>({
     x: 0,
     y: 0,
-    zoom: 1
+    zoom: 0.7
   });
   const [focusedNode, setFocusedNode] = useState<string | undefined>();
   const [isPanning, setIsPanning] = useState(false);
@@ -44,10 +44,36 @@ const MindMapCanvas: React.FC<MindMapCanvasProps> = ({
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Utility to get bounding box center of all nodes
+  function getMindmapCenter(nodes: NodeType[]) {
+    if (!nodes.length) return { x: 0, y: 0 };
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    nodes.forEach(node => {
+      minX = Math.min(minX, node.position.x);
+      maxX = Math.max(maxX, node.position.x);
+      minY = Math.min(minY, node.position.y);
+      maxY = Math.max(maxY, node.position.y);
+    });
+    return {
+      x: (minX + maxX) / 2,
+      y: (minY + maxY) / 2
+    };
+  }
+
   // Update mindmap data when props change
   useEffect(() => {
     setMindmapData(data);
   }, [data]);
+
+  // Center viewport on mindmap content at initial load
+  useEffect(() => {
+    const center = getMindmapCenter(mindmapData);
+    setViewport(prev => ({
+      ...prev,
+      x: -center.x - 200, // shift more to the left
+      y: -center.y
+    }));
+  }, [mindmapData.length]);
 
   // Optimize layout to prevent overlapping
   const optimizedData = optimizeLayout(mindmapData);
@@ -168,13 +194,14 @@ const MindMapCanvas: React.FC<MindMapCanvasProps> = ({
   }, [viewport.zoom]);
 
   const handleResetView = useCallback(() => {
+    const center = getMindmapCenter(mindmapData);
     setViewport({
-      x: 0,
-      y: 0,
+      x: -center.x - 200, // shift more to the left
+      y: -center.y,
       zoom: 0.7 // Set default zoom to 70%
     });
     setFocusedNode(undefined);
-  }, []);
+  }, [mindmapData]);
 
   // Global mouse event listeners for panning
   useEffect(() => {
@@ -246,53 +273,35 @@ const MindMapCanvas: React.FC<MindMapCanvasProps> = ({
       <div
         ref={containerRef}
         className={`w-full h-full ${isPanning ? 'cursor-grabbing' : 'cursor-grab'}`}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onWheel={handleWheel}
       >
         <svg
           ref={svgRef}
           width="100%"
           height="100%"
-          className="select-none"
-          style={{ minHeight: '100vh' }}
+          className="w-full h-full select-none"
+          style={{ minHeight: '100vh', cursor: isPanning ? 'grabbing' : 'grab' }}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onWheel={handleWheel}
         >
-          <defs>
-            <marker
-              id="arrowhead"
-              markerWidth="6"
-              markerHeight="4"
-              refX="5"
-              refY="2"
-              orient="auto"
-              markerUnits="strokeWidth"
-            >
-              <path d="M0,0 L0,4 L6,2 Z" fill="#94A3B8" className="transition-colors duration-300" />
-            </marker>
-          </defs>
-          
+          {/* Grid remains still */}
+          {showGrid && (
+            <GridOverlay
+              gridSize={gridSize}
+              viewport={viewport}
+              containerWidth={window.innerWidth}
+              containerHeight={window.innerHeight}
+            />
+          )}
+          {/* Mindmap content moves/zooms */}
           <g
-            transform={`translate(${window.innerWidth / 2 + viewport.x}, ${window.innerHeight / 2 + viewport.y}) scale(${viewport.zoom})`}
-            className="transition-transform duration-500 ease-[cubic-bezier(0.4,0,0.2,1)] will-change-transform"
+            className="smooth-zoom"
             style={{
-              transformOrigin: 'center',
-              backfaceVisibility: 'hidden',
-              WebkitFontSmoothing: 'subpixel-antialiased',
-              transformStyle: 'preserve-3d',
-              willChange: 'transform'
+              transform: `translate(${window.innerWidth / 2 + viewport.x}px, ${window.innerHeight / 2 + viewport.y}px) scale(${viewport.zoom})`,
+              transformOrigin: 'center center',
             }}
           >
-            {/* Grid Overlay - Now visible with enhanced styling */}
-            {showGrid && (
-              <GridOverlay
-                gridSize={gridSize}
-                viewport={viewport}
-                containerWidth={window.innerWidth}
-                containerHeight={window.innerHeight}
-              />
-            )}
-            
             {/* Render connections first */}
             {allConnections.map((conn, index) => (
               <Connection
