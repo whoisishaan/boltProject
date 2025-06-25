@@ -10,7 +10,7 @@ const app = express();
 const port = process.env.PORT || 3001;
 
 // MongoDB connection
-const uri = process.env.MONGODB_URI || "mongodb://localhost:27017/mindmap_db";
+const uri = process.env.MONGODB_URI || "mongodb://localhost:27017/mindmaps_db";
 const client = new MongoClient(uri);
 
 // Configure multer for file uploads (in-memory storage)
@@ -58,10 +58,163 @@ async function connectToDatabase() {
     const collections = await db.listCollections().toArray();
     console.log("📊 Available collections:", collections.map(c => c.name));
     
+    // If no mindmaps collection exists, create it with sample data
+    if (!collections.find(c => c.name === 'mindmaps')) {
+      console.log("📝 Creating mindmaps collection with sample data...");
+      await createSampleData();
+    }
+    
     return db;
   } catch (error) {
     console.error("❌ Failed to connect to MongoDB:", error);
+    console.log("💡 Make sure MongoDB is running locally or update MONGODB_URI in .env");
+    console.log("💡 To start MongoDB locally: brew services start mongodb-community (macOS) or sudo systemctl start mongod (Linux)");
     process.exit(1);
+  }
+}
+
+// Create sample mindmap data if collection is empty
+async function createSampleData() {
+  try {
+    const sampleMindmap = {
+      metadata: {
+        title: "Sample Database Management Systems",
+        description: "Complete guide to database concepts and management",
+        version: "1.0.0",
+        created: new Date().toISOString(),
+        lastModified: new Date().toISOString()
+      },
+      nodes: [
+        {
+          id: "relational-db",
+          title: "Relational Databases",
+          level: 0,
+          position: { x: -200, y: 0 },
+          color: "#DC2626",
+          children: [
+            {
+              id: "sql",
+              title: "SQL",
+              level: 1,
+              position: { x: -400, y: -150 },
+              parent: "relational-db",
+              color: "#EF4444",
+              relationshipLabel: "queried with",
+              children: [
+                {
+                  id: "ddl",
+                  title: "DDL",
+                  level: 2,
+                  position: { x: -500, y: -250 },
+                  parent: "sql",
+                  color: "#F87171",
+                  relationshipLabel: "data definition"
+                },
+                {
+                  id: "dml",
+                  title: "DML",
+                  level: 2,
+                  position: { x: -300, y: -250 },
+                  parent: "sql",
+                  color: "#F87171",
+                  relationshipLabel: "data manipulation"
+                }
+              ]
+            },
+            {
+              id: "normalization",
+              title: "Normalization",
+              level: 1,
+              position: { x: 0, y: -150 },
+              parent: "relational-db",
+              color: "#EF4444",
+              relationshipLabel: "organized by",
+              children: [
+                {
+                  id: "1nf",
+                  title: "1NF",
+                  level: 2,
+                  position: { x: -100, y: -250 },
+                  parent: "normalization",
+                  color: "#F87171",
+                  relationshipLabel: "first normal form"
+                },
+                {
+                  id: "2nf",
+                  title: "2NF",
+                  level: 2,
+                  position: { x: 100, y: -250 },
+                  parent: "normalization",
+                  color: "#F87171",
+                  relationshipLabel: "second normal form"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          id: "nosql-db",
+          title: "NoSQL Databases",
+          level: 0,
+          position: { x: 200, y: 0 },
+          color: "#059669",
+          children: [
+            {
+              id: "document-db",
+              title: "Document Stores",
+              level: 1,
+              position: { x: 100, y: 150 },
+              parent: "nosql-db",
+              color: "#10B981",
+              relationshipLabel: "type",
+              children: [
+                {
+                  id: "mongodb",
+                  title: "MongoDB",
+                  level: 2,
+                  position: { x: 0, y: 250 },
+                  parent: "document-db",
+                  color: "#34D399",
+                  relationshipLabel: "example"
+                }
+              ]
+            },
+            {
+              id: "key-value",
+              title: "Key-Value Stores",
+              level: 1,
+              position: { x: 300, y: 150 },
+              parent: "nosql-db",
+              color: "#10B981",
+              relationshipLabel: "type",
+              children: [
+                {
+                  id: "redis",
+                  title: "Redis",
+                  level: 2,
+                  position: { x: 200, y: 250 },
+                  parent: "key-value",
+                  color: "#34D399",
+                  relationshipLabel: "example"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      topLevelConnections: [
+        {
+          from: "relational-db",
+          to: "nosql-db",
+          label: "alternative to"
+        }
+      ]
+    };
+
+    await db.collection("mindmaps").insertOne(sampleMindmap);
+    console.log("✅ Sample mindmap data created successfully");
+  } catch (error) {
+    console.error("❌ Error creating sample data:", error);
   }
 }
 
@@ -70,7 +223,6 @@ async function connectToDatabase() {
 // Test endpoint to verify database connection and collections
 app.get('/api/test-db', async (req, res) => {
   try {
-    const db = client.db("mindmaps_db");
     const collections = await db.listCollections().toArray();
     const mindmaps = await db.collection("mindmaps").find({}).toArray();
     
@@ -172,7 +324,7 @@ app.get('/api/mindmaps/title/:title', async (req, res) => {
     const title = decodeURIComponent(req.params.title);
     
     const mindmap = await mindmaps.findOne({ 
-      "title": { $regex: new RegExp(title, 'i') }
+      "metadata.title": { $regex: new RegExp(title, 'i') }
     });
     
     if (!mindmap) {
@@ -182,10 +334,15 @@ app.get('/api/mindmaps/title/:title', async (req, res) => {
       });
     }
     
-    const { _id, ...mindmapData } = mindmap;
+    const transformedMindmap = {
+      id: mindmap._id.toString(),
+      metadata: mindmap.metadata,
+      nodes: mindmap.nodes || [],
+      topLevelConnections: mindmap.topLevelConnections || []
+    };
     
-    console.log(`📖 Fetched mindmap by title: ${mindmapData.title}`);
-    res.json(mindmapData);
+    console.log(`📖 Fetched mindmap by title: ${mindmap.metadata.title}`);
+    res.json(transformedMindmap);
     
   } catch (error) {
     console.error("❌ Error fetching mindmap by title:", error);
@@ -199,19 +356,19 @@ app.get('/api/mindmaps/title/:title', async (req, res) => {
 // Create a new mindmap
 app.post('/api/mindmaps', async (req, res) => {
   try {
-    const { title, description, nodes = [], topLevelConnections = [] } = req.body;
+    const { metadata, nodes = [], topLevelConnections = [] } = req.body;
     
-    if (!title) {
-      return res.status(400).json({ error: "Title is required" });
+    if (!metadata || !metadata.title) {
+      return res.status(400).json({ error: "Metadata with title is required" });
     }
 
     const now = new Date().toISOString();
     const mindmap = {
-      title,
-      description: description || '',
-      version: '1.0.0',
-      created: now,
-      lastModified: now,
+      metadata: {
+        ...metadata,
+        created: metadata.created || now,
+        lastModified: now
+      },
       nodes,
       topLevelConnections
     };
@@ -239,14 +396,14 @@ app.put('/api/mindmaps/:id', async (req, res) => {
     delete updateData._id;
     delete updateData.id;
 
+    // Update lastModified timestamp
+    if (updateData.metadata) {
+      updateData.metadata.lastModified = new Date().toISOString();
+    }
+
     const result = await mindmaps.findOneAndUpdate(
       { _id: new ObjectId(mindmapId) },
-      { 
-        $set: {
-          ...updateData,
-          lastModified: new Date().toISOString()
-        } 
-      },
+      { $set: updateData },
       { returnDocument: 'after' }
     );
 
@@ -372,31 +529,6 @@ app.get('/api/files/:id', async (req, res) => {
     res.status(500).json({ error: 'Error retrieving file' });
   }
 });
-
-// Helper function to derive category from title
-function deriveCategoryFromTitle(title) {
-  const categoryMap = {
-    'software development': 'Programming',
-    'development': 'Programming',
-    'data structures': 'Computer Science',
-    'algorithms': 'Computer Science',
-    'database': 'Database',
-    'dbms': 'Database',
-    'networking': 'Network',
-    'network': 'Network',
-    'operating system': 'System',
-    'os': 'System'
-  };
-  
-  const lowerTitle = title.toLowerCase();
-  for (const [key, category] of Object.entries(categoryMap)) {
-    if (lowerTitle.includes(key)) {
-      return category;
-    }
-  }
-  
-  return 'General';
-}
 
 // Error handling middleware
 app.use((err, req, res, next) => {
