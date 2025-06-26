@@ -373,6 +373,136 @@ app.get('/api/files/:id', async (req, res) => {
   }
 });
 
+// Text upload endpoint (simplified - no mindmap creation)
+app.post('/api/upload/text', express.text({ type: 'text/plain', limit: '5mb' }), async (req, res) => {
+  console.log('Text upload request received');
+  
+  try {
+    const textContent = req.body;
+    
+    if (!textContent || typeof textContent !== 'string' || textContent.trim() === '') {
+      return res.status(400).json({ 
+        error: 'No text content provided' 
+      });
+    }
+
+    const files = db.collection('files');
+    const now = new Date();
+    
+    // Create a new text document
+    const textDoc = {
+      filename: `text-${now.getTime()}.txt`,
+      contentType: 'text/plain',
+      content: textContent,
+      size: Buffer.byteLength(textContent, 'utf8'),
+      uploadDate: now,
+      isText: true
+    };
+
+    console.log('Inserting text into database...');
+    
+    // Insert the text into the database
+    const result = await files.insertOne(textDoc);
+    
+    console.log('Text uploaded successfully:', result.insertedId);
+    
+    res.status(200).json({ 
+      success: true,
+      message: 'Text uploaded successfully',
+      fileId: result.insertedId,
+      filename: textDoc.filename
+    });
+    
+  } catch (error) {
+    console.error('Error processing text upload:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Error processing text upload',
+      details: error.message 
+    });
+  }
+});
+
+// Text upload endpoint
+app.post('/api/upload/text', express.text({ type: 'text/plain', limit: '5mb' }), async (req, res) => {
+  console.log('Text upload request received');
+  
+  try {
+    const textContent = req.body;
+    
+    if (!textContent || typeof textContent !== 'string' || textContent.trim() === '') {
+      return res.status(400).json({ 
+        error: 'No text content provided' 
+      });
+    }
+
+    const files = db.collection('files');
+    const now = new Date();
+    
+    // Create a new text document
+    const textDoc = {
+      filename: `text-${now.getTime()}.txt`,
+      contentType: 'text/plain',
+      content: textContent,
+      size: Buffer.byteLength(textContent, 'utf8'),
+      uploadDate: now,
+      isText: true
+    };
+
+    console.log('Inserting text into database...');
+    
+    // Insert the text into the database
+    const result = await files.insertOne(textDoc);
+    
+    console.log('Text uploaded successfully:', result.insertedId);
+    
+    // Create a new mindmap for the text
+    const mindmaps = db.collection('mindmaps');
+    const title = `Text Upload - ${new Date().toLocaleString()}`;
+    const category = deriveCategoryFromTitle(textContent.substring(0, 100)); // Use first 100 chars for category
+    
+    const mindmap = {
+      title: title,
+      description: 'Uploaded text content',
+      version: '1.0.0',
+      created: now.toISOString(),
+      lastModified: now.toISOString(),
+      nodes: [{
+        id: '1',
+        type: 'text',
+        content: textContent.substring(0, 200) + (textContent.length > 200 ? '...' : ''),
+        position: { x: 250, y: 25 },
+        data: { label: 'Uploaded Text' },
+        style: { 
+          background: '#f0f9ff',
+          padding: '10px',
+          borderRadius: '8px',
+          width: '300px'
+        }
+      }],
+      topLevelConnections: [],
+      category: category,
+      textFileId: result.insertedId
+    };
+
+    const mindmapResult = await mindmaps.insertOne(mindmap);
+    
+    res.status(200).json({ 
+      message: 'Text uploaded and mindmap created successfully',
+      fileId: result.insertedId,
+      mindmapId: mindmapResult.insertedId,
+      title: title
+    });
+    
+  } catch (error) {
+    console.error('Error processing text upload:', error);
+    res.status(500).json({ 
+      error: 'Error processing text upload',
+      details: error.message 
+    });
+  }
+});
+
 // Helper function to derive category from title
 function deriveCategoryFromTitle(title) {
   const categoryMap = {
@@ -433,6 +563,7 @@ async function startServer() {
       console.log(`   DELETE /api/mindmaps/:id`);
       console.log(`   POST /api/upload`);
       console.log(`   GET  /api/files/:id`);
+      console.log(`   POST /api/upload/text`);
     });
   } catch (error) {
     console.error("❌ Failed to start server:", error);

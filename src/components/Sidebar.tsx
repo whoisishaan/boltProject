@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { Search, FileText, ChevronRight, X, Sparkles, AlertCircle, Loader2, Upload } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Search, FileText, ChevronRight, X, Sparkles, AlertCircle, Loader2, Upload, AlertTriangle, Check } from 'lucide-react';
 import { MindMapConfig } from '../types/mindmap';
 import { useTheme } from '../contexts/ThemeContext';
-import { mindmapApi, MindmapListItem, handleApiError } from '../services/api';
+import { mindmapApi, MindmapListItem, handleApiError, uploadFile } from '../services/api';
 import FileUpload from './FileUpload';
 
 interface SidebarProps {
@@ -22,6 +22,23 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onMindmapSelect, cur
   const [error, setError] = useState<string | null>(null);
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
   const [showFileUpload, setShowFileUpload] = useState(false);
+  const [inputText, setInputText] = useState('');
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadSuccess, setUploadSuccess] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const dropAreaRef = useRef<HTMLDivElement>(null);
+  const successTimeoutRef = useRef<NodeJS.Timeout>();
+
+  // Clear timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current);
+      }
+    };
+  }, []);
 
   // Fetch mindmaps list on component mount
   useEffect(() => {
@@ -126,6 +143,128 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onMindmapSelect, cur
     }
   };
 
+  const handleFileUpload = async (file: File) => {
+    if (!file) return;
+
+    // Check file type
+    const validTypes = ['application/pdf', 'text/plain'];
+    if (!validTypes.includes(file.type) && !file.name.match(/\.(pdf|txt)$/i)) {
+      setError('Only PDF and text files are allowed');
+      return;
+    }
+
+    // Check file size (5MB max)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+      setError('File size must be less than 5MB');
+      return;
+    }
+
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // Use the existing uploadFile function from the API service
+      const result = await uploadFile(file);
+      
+      // Show success message
+      alert(`File "${file.name}" uploaded successfully!`);
+      
+      // Refresh the mindmap list
+      fetchMindmapsList();
+    } catch (err) {
+      console.error('Error uploading file:', err);
+      setError(handleApiError(err));
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleFileUpload(file);
+      // Reset the input value to allow re-uploading the same file
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isDragging) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (isDragging) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      handleFileUpload(file);
+    }
+  };
+
+  const handleProcessClick = async () => {
+    if (!inputText.trim() || isProcessing) return;
+    
+    setIsProcessing(true);
+    setError(null);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001/api'}/upload/text`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain',
+        },
+        body: inputText,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new ApiError(response.status, errorData.error || 'Text upload failed');
+      }
+
+      const result = await response.json();
+      
+      // Show success state
+      setUploadSuccess(true);
+      
+      // Clear the input
+      setInputText('');
+      
+      // Reset success state after 2 seconds
+      if (successTimeoutRef.current) {
+        clearTimeout(successTimeoutRef.current);
+      }
+      successTimeoutRef.current = setTimeout(() => {
+        setUploadSuccess(false);
+      }, 2000);
+      
+    } catch (err) {
+      console.error('Error processing text:', err);
+      setError(handleApiError(err));
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -139,73 +278,34 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onMindmapSelect, cur
       />
       
       {/* Floating Sidebar Content */}
-      <div className="fixed top-6 left-6 bottom-6 w-80 z-50 flex flex-col space-y-4 pointer-events-none">
-        {/* Header Card with Upload Button */}
+      <div className="fixed top-6 left-6 bottom-6 w-60 z-50 flex flex-col space-y-4 pointer-events-none">
+        {/* Header Section */}
         <div className={`
-          rounded-2xl border shadow-2xl p-6 pointer-events-auto transition-all duration-300
+          rounded-2xl border shadow-2xl p-2 pointer-events-auto transition-all duration-300 mb-3
           ${isDark 
             ? 'bg-gray-800/90 backdrop-blur-xl border-gray-700/50' 
             : 'bg-white/90 backdrop-blur-xl border-white/20'
           }
         `}>
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className={`
-                p-2 rounded-xl transition-colors duration-300
-                ${isDark 
-                  ? 'bg-gradient-to-br from-blue-500/20 to-purple-500/20' 
-                  : 'bg-gradient-to-br from-blue-500/20 to-purple-500/20'
+            <h2 className={`
+              text-sm font-medium px-2 py-1
+              ${isDark ? 'text-gray-200' : 'text-gray-800'}
+            `}>
+              Mindmaps
+            </h2>
+            <button
+              onClick={() => setShowFileUpload(true)}
+              className={`
+                p-1.5 rounded-lg text-xs font-medium
+                ${isDark
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-blue-500 text-white hover:bg-blue-600'
                 }
-              `}>
-                <Sparkles className={`
-                  w-5 h-5 transition-colors duration-300
-                  ${isDark ? 'text-blue-400' : 'text-blue-600'}
-                `} />
-              </div>
-              <h2 className={`
-                text-xl font-bold bg-gradient-to-r bg-clip-text text-transparent transition-all duration-300
-                ${isDark 
-                  ? 'from-gray-100 to-gray-300' 
-                  : 'from-gray-800 to-gray-600'
-                }
-              `}>
-                Mindmaps
-              </h2>
-            </div>
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowFileUpload(!showFileUpload);
-                }}
-                className={`p-1.5 rounded-md transition-colors ${
-                  showFileUpload 
-                    ? 'bg-blue-100 text-blue-600 dark:bg-blue-900/50 dark:text-blue-400' 
-                    : 'text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700'
-                }`}
-                title="Upload file"
-              >
-                <Upload size={18} />
-              </button>
-              <button
-                onClick={onClose}
-                className={`
-                  p-2 rounded-xl transition-all duration-200 group
-                  ${isDark 
-                    ? 'hover:bg-gray-700/50' 
-                    : 'hover:bg-gray-100/50'
-                  }
-                `}
-              >
-                <X className={`
-                  w-5 h-5 transition-colors duration-200
-                  ${isDark 
-                    ? 'text-gray-400 group-hover:text-gray-200' 
-                    : 'text-gray-600 group-hover:text-gray-800'
-                  }
-                `} />
-              </button>
-            </div>
+              `}
+            >
+              <Upload size={14} className="w-3.5 h-3.5" />
+            </button>
           </div>
         </div>
 
@@ -243,38 +343,31 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onMindmapSelect, cur
 
         {/* Search Card */}
         <div className={`
-          rounded-2xl border shadow-2xl p-4 pointer-events-auto transition-all duration-300
+          rounded-2xl border shadow-2xl p-2 pointer-events-auto transition-all duration-300
           ${isDark 
             ? 'bg-gray-800/90 backdrop-blur-xl border-gray-700/50' 
             : 'bg-white/90 backdrop-blur-xl border-white/20'
           }
         `}>
-          <div className="relative group">
+          <div className="relative">
             <div className={`
-              absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300
-              ${isDark 
-                ? 'bg-gradient-to-r from-blue-500/5 to-purple-500/5' 
-                : 'bg-gradient-to-r from-blue-500/5 to-purple-500/5'
-              }
-            `}></div>
-            <div className={`
-              relative backdrop-blur-md rounded-xl border transition-colors duration-300
+              relative backdrop-blur-md rounded-xl border transition-colors duration-300 flex items-center
               ${isDark 
                 ? 'bg-gray-700/60 border-gray-600/30' 
                 : 'bg-white/60 border-white/30'
               }
             `}>
               <Search className={`
-                absolute left-4 top-1/2 transform -translate-y-1/2 w-4 h-4
+                ml-3 w-4 h-4 flex-shrink-0
                 ${isDark ? 'text-gray-400' : 'text-gray-500'}
               `} />
               <input
                 type="text"
-                placeholder="Search mindmaps..."
+                placeholder="Search..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className={`
-                  w-full pl-12 pr-4 py-3 bg-transparent outline-none font-medium transition-colors duration-300
+                  w-full px-3 py-2 bg-transparent outline-none text-sm transition-colors duration-300
                   ${isDark 
                     ? 'placeholder-gray-400 text-gray-200' 
                     : 'placeholder-gray-500 text-gray-800'
@@ -336,51 +429,31 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onMindmapSelect, cur
             ? 'bg-gray-800/90 backdrop-blur-xl border-gray-700/50' 
             : 'bg-white/90 backdrop-blur-xl border-white/20'
           }
+          scrollbar-thin ${isDark 
+            ? 'scrollbar-thumb-gray-600 scrollbar-track-gray-800/50' 
+            : 'scrollbar-thumb-gray-300 scrollbar-track-gray-100/50'
+          } scrollbar-thumb-rounded-full
         `}>
-          <div className="h-full overflow-y-auto p-4">
-            <div className="space-y-3">
+          <div className="h-full overflow-y-auto p-2">
+            <div className="space-y-1">
               {listLoading ? (
-                <div className="text-center py-12">
-                  <div className={`
-                    p-4 rounded-2xl inline-block mb-4 transition-colors duration-300
-                    ${isDark ? 'bg-gray-700/50' : 'bg-gray-100/50'}
-                  `}>
-                    <Loader2 className={`
-                      w-12 h-12 animate-spin
-                      ${isDark ? 'text-blue-400' : 'text-blue-600'}
-                    `} />
-                  </div>
-                  <p className={`
-                    font-medium transition-colors duration-300
-                    ${isDark ? 'text-gray-300' : 'text-gray-600'}
-                  `}>Loading mindmaps...</p>
-                  <p className={`
-                    text-sm mt-1 transition-colors duration-300
-                    ${isDark ? 'text-gray-500' : 'text-gray-500'}
-                  `}>Connecting to database</p>
+                <div className="flex justify-center py-4">
+                  <Loader2 className={`
+                    w-5 h-5 animate-spin
+                    ${isDark ? 'text-blue-400' : 'text-blue-600'}
+                  `} />
                 </div>
               ) : filteredMindmaps.length === 0 ? (
-                <div className="text-center py-12">
-                  <div className={`
-                    p-4 rounded-2xl inline-block mb-4 transition-colors duration-300
-                    ${isDark ? 'bg-gray-700/50' : 'bg-gray-100/50'}
-                  `}>
-                    <FileText className={`
-                      w-12 h-12
-                      ${isDark ? 'text-gray-500' : 'text-gray-400'}
-                    `} />
-                  </div>
+                <div className="text-center py-6">
+                  <FileText className={`
+                    w-6 h-6 mx-auto mb-1
+                    ${isDark ? 'text-gray-500' : 'text-gray-400'}
+                  `} />
                   <p className={`
-                    font-medium transition-colors duration-300
-                    ${isDark ? 'text-gray-300' : 'text-gray-600'}
+                    text-xs transition-colors duration-300
+                    ${isDark ? 'text-gray-400' : 'text-gray-500'}
                   `}>
-                    {availableMindmaps.length === 0 ? 'No mindmaps available' : 'No mindmaps found'}
-                  </p>
-                  <p className={`
-                    text-sm mt-1 transition-colors duration-300
-                    ${isDark ? 'text-gray-500' : 'text-gray-500'}
-                  `}>
-                    {availableMindmaps.length === 0 ? 'Check your database connection' : 'Try adjusting your search'}
+                    {availableMindmaps.length === 0 ? 'No mindmaps' : 'No results'}
                   </p>
                 </div>
               ) : (
@@ -388,93 +461,23 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onMindmapSelect, cur
                   <div
                     key={mindmap.id}
                     onClick={() => loadMindmap(mindmap)}
-                    onMouseEnter={() => setHoveredItem(mindmap.id)}
-                    onMouseLeave={() => setHoveredItem(null)}
-                    className={`
-                      group cursor-pointer relative overflow-hidden rounded-xl transition-all duration-300 transform
-                      ${currentMindmap === mindmap.id 
-                        ? 'scale-[1.02] shadow-lg' 
-                        : 'hover:scale-[1.01] hover:shadow-md'
-                      }
-                      ${loading === mindmap.id ? 'opacity-50 cursor-not-allowed' : ''}
-                    `}
+                    className={`px-3 py-2 text-sm rounded-lg transition-all duration-200 cursor-pointer
+                    ${currentMindmap === mindmap.id
+                      ? isDark
+                        ? 'bg-blue-900/50 text-white'
+                        : 'bg-blue-100 text-blue-800'
+                      : isDark
+                      ? 'text-gray-300 hover:bg-gray-700/60'
+                      : 'text-gray-700 hover:bg-gray-100'
+                    }
+                    ${loading === mindmap.id ? 'opacity-50 cursor-not-allowed' : ''}
+                  `}
                   >
-                    {/* Dynamic Background */}
-                    <div className={`
-                      absolute inset-0 bg-gradient-to-br ${getCategoryGradient(mindmap.category)}
-                      ${hoveredItem === mindmap.id ? 'opacity-100' : 'opacity-60'}
-                      transition-opacity duration-300
-                    `}></div>
-                    
-                    {/* Card Content */}
-                    <div className={`
-                      relative p-4 backdrop-blur-sm border transition-all duration-300
-                      ${currentMindmap === mindmap.id 
-                        ? `${isDark ? 'border-gray-600/40 bg-gray-700/70' : 'border-white/40 bg-white/70'}` 
-                        : `${isDark ? 'border-gray-600/20 hover:border-gray-600/30 hover:bg-gray-700/65' : 'border-white/20 hover:border-white/30 hover:bg-white/65'}`
-                      }
-                    `}>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-3 mb-2">
-                            <div className={`
-                              p-1.5 rounded-lg border transition-colors duration-300
-                              ${isDark 
-                                ? 'bg-gray-600/50 border-gray-500/30' 
-                                : 'bg-white/50 border-white/30'
-                              }
-                            `}>
-                              <FileText className={`
-                                w-3.5 h-3.5
-                                ${isDark ? 'text-gray-300' : 'text-gray-600'}
-                              `} />
-                            </div>
-                            <h3 className={`
-                              font-bold text-sm truncate transition-colors duration-300
-                              ${isDark ? 'text-gray-200' : 'text-gray-800'}
-                            `}>
-                              {mindmap.title}
-                            </h3>
-                          </div>
-                          
-                          <p className={`
-                            text-xs mb-2 line-clamp-2 leading-relaxed transition-colors duration-300
-                            ${isDark ? 'text-gray-400' : 'text-gray-700'}
-                          `}>
-                            {mindmap.description}
-                          </p>
-                          
-                          <div className={`
-                            inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold border transition-colors duration-300
-                            ${isDark 
-                              ? 'bg-gray-600/50 border-gray-500/30' 
-                              : 'bg-white/50 border-white/30'
-                            }
-                            ${getCategoryAccent(mindmap.category)}
-                          `}>
-                            {mindmap.category}
-                          </div>
-                        </div>
-                        
-                        <div className="ml-3 flex-shrink-0">
-                          {loading === mindmap.id ? (
-                            <div className="animate-spin w-4 h-4 border-2 border-blue-500/30 border-t-blue-500 rounded-full" />
-                          ) : (
-                            <div className={`
-                              p-1.5 rounded-lg border group-hover:translate-x-0.5 transition-all duration-200
-                              ${isDark 
-                                ? 'bg-gray-600/30 border-gray-500/20' 
-                                : 'bg-white/30 border-white/20'
-                              }
-                            `}>
-                              <ChevronRight className={`
-                                w-3.5 h-3.5
-                                ${isDark ? 'text-gray-300' : 'text-gray-600'}
-                              `} />
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                    <div className="flex items-center justify-between">
+                      <span className="truncate">{mindmap.title}</span>
+                      {loading === mindmap.id && (
+                        <Loader2 className="w-3.5 h-3.5 ml-2 animate-spin flex-shrink-0" />
+                      )}
                     </div>
                   </div>
                 ))
@@ -483,27 +486,89 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, onMindmapSelect, cur
           </div>
         </div>
 
-        {/* Footer Card */}
-        <div className={`
-          rounded-2xl border shadow-2xl p-4 pointer-events-auto transition-all duration-300
-          ${isDark 
-            ? 'bg-gray-800/90 backdrop-blur-xl border-gray-700/50' 
-            : 'bg-white/90 backdrop-blur-xl border-white/20'
-          }
-        `}>
-          <div className="text-center">
-            <p className={`
-              text-xs font-medium transition-colors duration-300
-              ${isDark ? 'text-gray-400' : 'text-gray-600'}
-            `}>
-              {listLoading ? 'Loading...' : `${filteredMindmaps.length} mindmap${filteredMindmaps.length !== 1 ? 's' : ''} available`}
-            </p>
-            {!listLoading && availableMindmaps.length > 0 && (
-              <p className={`
-                text-xs mt-1 transition-colors duration-300
-                ${isDark ? 'text-gray-500' : 'text-gray-500'}
-              `}>
-                Loaded from database
+        {/* Input Field Card */}
+        <div 
+          ref={dropAreaRef}
+          className={`
+            rounded-2xl border-2 shadow-2xl p-2 pointer-events-auto transition-all duration-300 mt-3
+            ${isDark 
+              ? 'bg-gray-800/90 backdrop-blur-xl border-gray-700/50' 
+              : 'bg-white/90 backdrop-blur-xl border-white/20'
+            }
+            ${isDragging ? (isDark ? 'border-blue-500/70 bg-gray-700/80' : 'border-blue-500/70 bg-gray-100/90') : ''}
+          `}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          <div className="space-y-2">
+            <div className="relative">
+              <textarea
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+                placeholder="Type your text or drop a file here..."
+                className={`
+                  w-full px-2.5 py-1 text-xs rounded-lg border bg-transparent outline-none
+                  resize-none min-h-[50px] focus:ring-1 focus:ring-offset-1
+                  ${isDragging ? 'border-dashed' : ''}
+                  ${isDark 
+                    ? 'border-gray-600/50 text-gray-200 placeholder-gray-500 focus:border-blue-500/50 focus:ring-blue-500/30' 
+                    : 'border-gray-300 text-gray-800 placeholder-gray-400 focus:border-blue-500/70 focus:ring-blue-500/20'
+                  }
+                `}
+                rows={2}
+              />
+              <div className="absolute bottom-2.5 right-2.5 flex items-center space-x-1">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`
+                    p-0.5 rounded transition-colors text-xs
+                    ${isDark 
+                      ? 'text-gray-400 hover:bg-gray-700/60 hover:text-gray-200' 
+                      : 'text-gray-500 hover:bg-gray-100/80 hover:text-gray-700'
+                    }
+                  `}
+                  title="Upload file"
+                >
+                  <Upload size={12} />
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  className="hidden"
+                  accept=".txt,.pdf"
+                  onChange={handleFileInputChange}
+                />
+                <button
+                  type="button"
+                  onClick={handleProcessClick}
+                  disabled={!inputText.trim() || isProcessing}
+                  className={`
+                    px-1.5 py-0.5 text-xs rounded font-medium transition-colors flex items-center justify-center min-w-[60px]
+                    ${!inputText.trim() || isProcessing
+                      ? isDark 
+                        ? 'bg-gray-700 text-gray-500 cursor-not-allowed' 
+                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                      : uploadSuccess
+                      ? 'bg-green-500 text-white'
+                      : isDark
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-blue-500 text-white hover:bg-blue-600'
+                    }
+                  `}
+                >
+                  {isProcessing ? (
+                    <Loader2 className="animate-spin h-3 w-3" />
+                  ) : uploadSuccess ? (
+                    <Check className="h-3 w-3" />
+                  ) : 'Process'}
+                </button>
+              </div>
+            </div>
+            {isDragging && (
+              <p className={`text-[10px] text-center ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>
+                Drop file to upload
               </p>
             )}
           </div>

@@ -61,15 +61,20 @@ export const mindmapApi = {
         created: string;
         lastModified: string;
       };
+      category?: string; // Add category to the response type
     }>>('/mindmaps');
+
+    console.log('Fetched mindmaps from API:', mindmaps);
 
     // Transform the data to match the MindmapListItem interface
     return mindmaps.map(mindmap => ({
-      ...mindmap.metadata,
       id: mindmap.id,
-      category: 'default', // Add default category
-      created: mindmap.metadata.created,
-      lastModified: mindmap.metadata.lastModified
+      title: mindmap.metadata?.title || 'Untitled',
+      description: mindmap.metadata?.description || '',
+      version: mindmap.metadata?.version || '1.0.0',
+      created: mindmap.metadata?.created || new Date().toISOString(),
+      lastModified: mindmap.metadata?.lastModified || new Date().toISOString(),
+      category: mindmap.category || 'default'
     }));
   },
 

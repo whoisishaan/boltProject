@@ -175,31 +175,53 @@ const MindMapCanvas: React.FC<MindMapCanvasProps> = ({
 
   // Zoom control handlers
   const handleZoomIn = useCallback(() => {
-    setViewport(prev => ({
-      ...prev,
-      zoom: Math.min(prev.zoom * 1.2, 3)
-    }));
-  }, []);
-
-  const handleZoomOut = useCallback(() => {
-    const newZoom = Math.max(viewport.zoom * 0.8, 0.3);
-    setViewport(prev => ({
-      ...prev,
-      zoom: newZoom
-    }));
+    console.log('Zoom in clicked');
+    const newZoom = Math.min(viewport.zoom * 1.2, 3);
+    console.log('New zoom level:', newZoom);
+    setViewport(prev => {
+      console.log('Setting viewport with zoom:', newZoom);
+      return {
+        ...prev,
+        zoom: newZoom
+      };
+    });
     
     if (newZoom < 1) {
+      console.log('Clearing focused node');
       setFocusedNode(undefined);
     }
   }, [viewport.zoom]);
 
-  const handleResetView = useCallback(() => {
-    const center = getMindmapCenter(mindmapData);
-    setViewport({
-      x: -center.x - 200, // shift more to the left
-      y: -center.y,
-      zoom: 0.7 // Set default zoom to 70%
+  const handleZoomOut = useCallback(() => {
+    console.log('Zoom out clicked');
+    const newZoom = Math.max(viewport.zoom * 0.8, 0.3);
+    console.log('New zoom level:', newZoom);
+    setViewport(prev => {
+      console.log('Setting viewport with zoom:', newZoom);
+      return {
+        ...prev,
+        zoom: newZoom
+      };
     });
+    
+    if (newZoom < 1) {
+      console.log('Clearing focused node');
+      setFocusedNode(undefined);
+    }
+  }, [viewport.zoom]);
+
+  // Reset view to center and default zoom
+  const handleResetView = useCallback(() => {
+    console.log('Reset view clicked');
+    const center = getMindmapCenter(mindmapData);
+    console.log('Center point:', center);
+    const newViewport = {
+      x: -center.x - 200, // Match the initial left shift
+      y: -center.y,
+      zoom: 0.7
+    };
+    console.log('New viewport:', newViewport);
+    setViewport(newViewport);
     setFocusedNode(undefined);
   }, [mindmapData]);
 
@@ -266,25 +288,73 @@ const MindMapCanvas: React.FC<MindMapCanvasProps> = ({
           zoom={viewport.zoom} 
           onZoomIn={handleZoomIn} 
           onZoomOut={handleZoomOut} 
-          onReset={handleResetView} 
+          onReset={handleResetView}
+          className="z-10"
         />
       </div>
 
       <div
         ref={containerRef}
-        className={`w-full h-full ${isPanning ? 'cursor-grabbing' : 'cursor-grab'}`}
+        className={`relative w-full h-full ${isPanning ? 'cursor-grabbing' : 'cursor-grab'}`}
       >
+        {/* Static Grid Overlay */}
+        {showGrid && (
+          <div className="absolute inset-0 pointer-events-none">
+            <svg
+              width="100%"
+              height="100%"
+              className="w-full h-full"
+              style={{
+                backgroundSize: `${gridSize}px ${gridSize}px`,
+                backgroundImage: `
+                  radial-gradient(circle at 1px 1px, ${isDark ? 'rgba(75, 85, 99, 0.15)' : 'rgba(203, 213, 225, 0.15)'} 1px, transparent 1px),
+                  radial-gradient(circle at 1px 1px, ${isDark ? 'rgba(75, 85, 99, 0.15)' : 'rgba(203, 213, 225, 0.15)'} 1px, transparent 1px)
+                `,
+                backgroundPosition: 'center center',
+              }}
+            >
+              {/* Origin point indicator */}
+              <circle
+                cx="50%"
+                cy="50%"
+                r="3"
+                fill={isDark ? 'rgba(148, 163, 184, 0.5)' : 'rgba(71, 85, 105, 0.5)'}
+                stroke="transparent"
+              />
+            </svg>
+          </div>
+        )}
+
+        {/* Mindmap Container */}
         <svg
           ref={svgRef}
           width="100%"
           height="100%"
-          className="w-full h-full select-none"
+          className="absolute inset-0 w-full h-full select-none"
           style={{ minHeight: '100vh', cursor: isPanning ? 'grabbing' : 'grab' }}
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onWheel={handleWheel}
         >
+          {/* Arrowhead marker definition */}
+          <defs>
+            <marker
+              id="arrowhead"
+              markerWidth="10"
+              markerHeight="7"
+              refX="9"
+              refY="3.5"
+              orient="auto"
+              markerUnits="strokeWidth"
+            >
+              <polygon 
+                points="0 0, 10 3.5, 0 7" 
+                className={isDark ? 'fill-gray-400' : 'fill-gray-500'}
+              />
+            </marker>
+          </defs>
+
           {/* Mindmap content moves/zooms */}
           <g
             className="smooth-zoom"
@@ -293,16 +363,6 @@ const MindMapCanvas: React.FC<MindMapCanvasProps> = ({
               transformOrigin: 'center center',
             }}
           >
-            {/* Grid Overlay - Moves with mindmap */}
-            {showGrid && (
-              <GridOverlay
-                gridSize={gridSize}
-                viewport={viewport}
-                containerWidth={window.innerWidth}
-                containerHeight={window.innerHeight}
-              />
-            )}
-            
             {/* Render connections first */}
             {allConnections.map((conn, index) => (
               <Connection
